@@ -3,20 +3,44 @@ from PIL import Image
 from io import BytesIO
 from datetime import datetime
 import time
+import pygame
 
 URL = "https://inspirobot.me/api"
 
-while (true):
-    count = count + 1
+DELAY = 15
 
-    PARAMS = { "generate" : "true"}
-    if (datetime.now().month == 12):
-        PARAMS["season"] = "xmas"
+pygame.init()
+pygame.mouse.set_visible(False)
 
-    r = requests.get(url = URL, params = PARAMS)
-    i = requests.get(r.text)
-    img = Image.open(BytesIO(i.content))
+screen = pygame.display.set_mode((0,0), pygame.FULLSCREEN)
 
-    img.show()
-    
-    time.sleep(5)
+screen_height = screen.get_height()
+screen_width = screen.get_width()
+img_offset = (screen_width - screen_height) / 2
+
+t = time.time()
+t = t + DELAY + 1
+done = False
+while (not done):
+
+    for event in pygame.event.get():
+        if event.type == pygame.QUIT:
+            done = True
+        elif event.type == pygame.KEYDOWN:
+            if event.key == pygame.K_ESCAPE:
+                done = True
+                
+    if (time.time() - t > DELAY):
+        PARAMS = { "generate" : "true"}
+        if (datetime.now().month == 12):
+            PARAMS["season"] = "xmas"
+
+        r = requests.get(url = URL, params = PARAMS)
+        i = requests.get(r.text)
+        img = pygame.image.load(BytesIO(i.content))
+        img = pygame.transform.scale(img, (screen_height, screen_height))
+
+        screen.blit(img, (img_offset,0))
+        pygame.display.flip()
+        
+        t = time.time()
